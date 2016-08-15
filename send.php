@@ -42,7 +42,7 @@ public function _construct () {
       $sendEmail = $this->send($this->oMailData);
   }
 
-	  if($sendEmail) {
+	  if(isset($sendEmail) && $sendEmail == 200) {
 	    header('Location: /thank-you');
 	  } else {
 	    print "<strong><p style='color: #ff0000'>Email failed to send, please try again.</p></strong>";
@@ -50,9 +50,10 @@ public function _construct () {
 
 }
 
+// standard email using zend
 public function send($email,$auth) {
 
- //SMTP server configuration
+ //smtp config options for zend mail
  $smtpHost = 'smtp.gmail.com';
  $smtpConf = array(
   'auth' => 'login',
@@ -65,10 +66,10 @@ public function send($email,$auth) {
 
  //Create email
  $mail = new Zend_Mail();
- $mail->setFrom($auth['auth_account'], $your_name);
- $mail->addTo($send_to_email, $send_to_name);
- $mail->setSubject('Hello World');
- $mail->setBodyText('This is the body text of the email.');
+ $mail->setFrom($auth['auth_account'], $auth['auth_name']);
+ $mail->addTo($email['to']);
+ $mail->setSubject($email['Subject']);
+ $mail->setBodyText($email['HTMLBody']);
 
  //Send
  $sent = 200;
@@ -84,7 +85,8 @@ public function send($email,$auth) {
 
 }
 
-
+// postmark send via curl, standard initialise and send using api
+// postmark could be switch with sendgrid by swapping api key, and smtp api reference.
 public function postmark($email){
 		
     $json = json_encode(array($email);
@@ -100,9 +102,9 @@ public function postmark($email){
     ));
     curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
     $response = json_decode(curl_exec($ch), true);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $sent = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    return $http_code === 200;
+    return $sent === 200;
 	
 	}
 	
