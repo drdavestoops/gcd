@@ -1,0 +1,3 @@
+<?php
+
+define('POSTMARK_API_KEY', 'YOUR-API-KEY-HERE');
